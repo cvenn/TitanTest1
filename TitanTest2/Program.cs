@@ -1,4 +1,5 @@
 ﻿using LXProtocols.AvolitesWebAPI;
+using System.Reflection.Emit;
 
 namespace TitanTest2 {
     internal class Program {
@@ -20,51 +21,65 @@ namespace TitanTest2 {
         public async Task Run() {
             await titan.Programmer.ClearAll();
             await Test1();
-            //await Test2();
+            await Test2();
+            await Test3();
         }
 
         private async Task Test1() {
-            int num = 7;
-            int start = 17;
+            int numFixtures = 7;
+            int startFixture = 17;
             double hue = 0;
-            for (int fixture = start; fixture < start + num; ++fixture, hue += 360 / num) {
-                await AddFixture(fixture, 100, hue, 1, 1);
+            for (int fixture = startFixture; fixture < startFixture + numFixtures; ++fixture, hue += 360 / numFixtures) {
+                await AddFixture(fixture);
+                await SetAttributes(100, hue, 1, 1);
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
-            await StorePlayback(0, 0);
+            await SavePlayback(0, 0);
 
             await titan.Programmer.ClearAll();
         }
 
         private async Task Test2() {
-            int num = 5;
-            int start = 11;
+            int numGroups = 5;
+            int startGroup = 11;
             double hue = 0;
-            for (int group = start; group < start + num; ++group, hue += 360 / num) {
-                await AddGroup(group, 100, hue, 1, 1);
+            for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
+                await AddGroup(group);
+                await SetAttributes(100, hue, 1, 1);
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
-            await StorePlayback(0, 1);
+            await SavePlayback(0, 1);
 
             await titan.Programmer.ClearAll();
         }
 
-        private async Task AddFixture(double fixture, double level, double hue, double saturation, double intensity) {
-            await titan.Selection.Clear();
-            await titan.Selection.SelectFixturesFromHandles(HandleReference.FromUserNumbers(new double[] { fixture }));
-            await SetAttributes(level, hue, saturation, intensity);
+        private async Task Test3() {
+            int numGroups = 3;
+            int startGroup = 8;
+            double hue = 0;
+            for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
+                await AddGroup(group);
+                await SetAttributes(100, hue, 1, 1);
+            }
+            await titan.Programmer.SetSelectedDimmerxFade(true);
+            await SavePlayback(0, 2);
+
+            await titan.Programmer.ClearAll();
         }
 
-        private async Task AddFixtures(double[] fixtures, double level, double hue, double saturation, double intensity) {
+        private async Task AddFixture(double fixture) {
+            await titan.Selection.Clear();
+            await titan.Selection.SelectFixtureFromHandle(HandleReference.FromUserNumber(fixture));
+        }
+
+        private async Task AddFixtures(double[] fixtures) {
             await titan.Selection.Clear();
             await titan.Selection.SelectFixturesFromHandles(HandleReference.FromUserNumbers(fixtures));
-            await SetAttributes(level, hue, saturation, intensity);
         }
 
-        private async Task AddGroup(int group, double level, double hue, double saturation, double intensity) {
+        private async Task AddGroup(int group) {
             await titan.Selection.Clear();
             await titan.Selection.SelectGroupFromHandle(HandleReference.FromUserNumber(group));
-            await SetAttributes(level, hue, saturation, intensity);
         }
 
         private async Task SetAttributes(double level, double hue, double saturation, double intensity) {
@@ -72,7 +87,7 @@ namespace TitanTest2 {
             await titan.Programmer.SetColourControlHSI(hue, saturation, intensity);
         }
 
-        private async Task StorePlayback(int playbackPage, int playbackIndex) {
+        private async Task SavePlayback(int playbackPage, int playbackIndex) {
             List<HandleInformation> playbacks = (await titan.Playbacks.GetPlaybacks("PlaybackWindow", playbackPage)).ToList();
             HandleInformation? h = playbacks.FirstOrDefault(p => p.HandleLocation.Index == playbackIndex);
             if (null == h) {
