@@ -23,6 +23,7 @@ namespace TitanTest2 {
             await Test1();
             await Test2();
             await Test3();
+            await Test4();
         }
 
         private async Task Test1() {
@@ -63,6 +64,20 @@ namespace TitanTest2 {
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
             await SavePlayback(0, 2);
+
+            await titan.Programmer.ClearAll();
+        }
+
+        private async Task Test4() {
+            int numGroups = 15;
+            int startGroup = 23;
+            double hue = 0;
+            for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
+                await AddGroup(group);
+                await SetAttributes(100, hue, 1, 1);
+            }
+            await titan.Programmer.SetSelectedDimmerxFade(true);
+            await SavePlayback(0, 3);
 
             await titan.Programmer.ClearAll();
         }
