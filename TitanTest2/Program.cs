@@ -1,6 +1,4 @@
 ﻿using LXProtocols.AvolitesWebAPI;
-using System.Linq;
-using System.Reflection.Emit;
 
 namespace TitanTest2 {
     internal class Program {
@@ -21,65 +19,32 @@ namespace TitanTest2 {
 
         public async Task Run() {
             await ClearProgrammer();
-            await Test1();
-            await Test2();
-            await Test3();
-            await Test4();
+            await MultiColourGroups(3, 8, 0);
+            await MultiColourGroups(5, 11, 1);
+            await MultiColourFixtures(7, 17, 2);
+            await MultiColourGroups(15, 23, 3);
         }
 
-        private async Task Test1() {
-            int numFixtures = 7;
-            int startFixture = 17;
+        private async Task MultiColourFixtures(int numFixtures, int startFixture, int playbackOffset) {
             double hue = 0;
             for (int fixture = startFixture; fixture < startFixture + numFixtures; ++fixture, hue += 360 / numFixtures) {
-                //Console.WriteLine($"Adding fixture: {fixture}");
                 await AddFixture(fixture);
                 await SetAttributes(100, hue, 1, 1);
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
-            await SavePlayback(0, 0);
+            await SavePlayback(0, playbackOffset);
 
             await ClearProgrammer();
         }
 
-        private async Task Test2() {
-            int numGroups = 5;
-            int startGroup = 11;
+        private async Task MultiColourGroups(int numGroups, int startGroup, int playbackOffset) {
             double hue = 0;
             for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
                 await AddGroup(group);
                 await SetAttributes(100, hue, 1, 1);
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
-            await SavePlayback(0, 1);
-
-            await ClearProgrammer();
-        }
-
-        private async Task Test3() {
-            int numGroups = 3;
-            int startGroup = 8;
-            double hue = 0;
-            for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
-                await AddGroup(group);
-                await SetAttributes(100, hue, 1, 1);
-            }
-            await titan.Programmer.SetSelectedDimmerxFade(true);
-            await SavePlayback(0, 2);
-
-            await ClearProgrammer();
-        }
-
-        private async Task Test4() {
-            int numGroups = 15;
-            int startGroup = 23;
-            double hue = 0;
-            for (int group = startGroup; group < startGroup + numGroups; ++group, hue += 360 / numGroups) {
-                await AddGroup(group);
-                await SetAttributes(100, hue, 1, 1);
-            }
-            await titan.Programmer.SetSelectedDimmerxFade(true);
-            await SavePlayback(0, 3);
+            await SavePlayback(0, playbackOffset);
 
             await ClearProgrammer();
         }
