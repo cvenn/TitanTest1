@@ -1,4 +1,5 @@
 ﻿using LXProtocols.AvolitesWebAPI;
+using System.Linq;
 using System.Reflection.Emit;
 
 namespace TitanTest2 {
@@ -19,7 +20,7 @@ namespace TitanTest2 {
         }
 
         public async Task Run() {
-            await titan.Programmer.ClearAll();
+            await ClearProgrammer();
             await Test1();
             await Test2();
             await Test3();
@@ -31,13 +32,14 @@ namespace TitanTest2 {
             int startFixture = 17;
             double hue = 0;
             for (int fixture = startFixture; fixture < startFixture + numFixtures; ++fixture, hue += 360 / numFixtures) {
+                //Console.WriteLine($"Adding fixture: {fixture}");
                 await AddFixture(fixture);
                 await SetAttributes(100, hue, 1, 1);
             }
             await titan.Programmer.SetSelectedDimmerxFade(true);
             await SavePlayback(0, 0);
 
-            await titan.Programmer.ClearAll();
+            await ClearProgrammer();
         }
 
         private async Task Test2() {
@@ -51,7 +53,7 @@ namespace TitanTest2 {
             await titan.Programmer.SetSelectedDimmerxFade(true);
             await SavePlayback(0, 1);
 
-            await titan.Programmer.ClearAll();
+            await ClearProgrammer();
         }
 
         private async Task Test3() {
@@ -65,7 +67,7 @@ namespace TitanTest2 {
             await titan.Programmer.SetSelectedDimmerxFade(true);
             await SavePlayback(0, 2);
 
-            await titan.Programmer.ClearAll();
+            await ClearProgrammer();
         }
 
         private async Task Test4() {
@@ -79,12 +81,15 @@ namespace TitanTest2 {
             await titan.Programmer.SetSelectedDimmerxFade(true);
             await SavePlayback(0, 3);
 
-            await titan.Programmer.ClearAll();
+            await ClearProgrammer();
         }
 
         private async Task AddFixture(double fixture) {
             await titan.Selection.Clear();
+            //HandleReference id = HandleReference.FromUserNumber(fixture);
+            //Console.WriteLine($"FixtureId: {id.ToQueryArgument("id")}");
             await titan.Selection.SelectFixtureFromHandle(HandleReference.FromUserNumber(fixture));
+            //Console.WriteLine($"Selected fixtures: {string.Join(",", await GetSelectedIds())}");
         }
 
         private async Task AddFixtures(double[] fixtures) {
@@ -102,6 +107,10 @@ namespace TitanTest2 {
             await titan.Programmer.SetColourControlHSI(hue, saturation, intensity);
         }
 
+        private async Task<List<int>> GetSelectedIds() {
+            return (await titan.Selection.GetSelectedFixtureIds()).ToList();
+        }
+
         private async Task SavePlayback(int playbackPage, int playbackIndex) {
             List<HandleInformation> playbacks = (await titan.Playbacks.GetPlaybacks("PlaybackWindow", playbackPage)).ToList();
             HandleInformation? h = playbacks.FirstOrDefault(p => p.HandleLocation.Index == playbackIndex);
@@ -110,6 +119,11 @@ namespace TitanTest2 {
             } else {
                 await titan.Playbacks.ReplaceCue(h.TitanId);
             }
+        }
+
+        private async Task ClearProgrammer() {
+            await titan.Programmer.ClearAll();
+            await Task.Delay(500);
         }
 
     }
